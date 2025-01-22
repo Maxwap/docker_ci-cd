@@ -1,4 +1,4 @@
-name: Docker Build
+name: Build and Push to GHCR
 
 on:
   push:
@@ -6,13 +6,20 @@ on:
       - main
 
 jobs:
-  build:
+  build-and-push:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
+      - name: Log in to GitHub Container Registry
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
       - name: Build Docker image
         run: |
-          docker build -t my-flask-app .
+          docker build -t ghcr.io/${{ github.repository_owner }}/my-flask-app:latest .
+
+      - name: Push Docker image to GHCR
+        run: |
+          docker push ghcr.io/${{ github.repository_owner }}/my-flask-app:latest
